@@ -41,20 +41,20 @@ void element::set_data(int i, string n , string s){
 #define Heap_Size 30+1 //According to problem conditions. Heap Size is30 because I am goona vacate index 0
 // Define heap class
 class set{
-  element Heap[Heap_Size]; // make Heap
   int e_size; // number of elements
 
   public :
+    element Heap[Heap_Size]; // make Heap
     set(); // e_size = 0
     int set_size(); // return elements size  --> 현재 원소수 조회 ,ADT로 인해 e_size는 private 원소 
     bool heap_full(); // e_size >= Heap_Size - 1 ? 인지 판단
     bool heap_empty(); // e_size == 0 ? 인지 판단
-    void INSERT(set& S , element x); //inserts element x into set S.
+    void MIN_HEAPIFY(set S); // Make heap to min heap.
+    void INSERT(set &S , element x); //inserts element x into set S.
     element MINIMUM(set S); //returns element of S with largest key.
-    element EXTRACT_MIN(set& S); // removes and returns element of S with largest key.
-    void DECREASE_KEY(set S, element x , int k); // decreases value of element x's key to k.
+    element EXTRACT_MIN(set &S); // removes and returns element of S with largest key.
+    void DECREASE_KEY(set &S, element &x , int k); // decreases value of element x's key to k.
     void PRINT_ALL(set S); // Print all elements in queue.
-
 };
 
 //Constructor
@@ -75,12 +75,34 @@ int set::set_size(){
   return e_size;
 }
 
+//Make Heap to Min Heap
+void set::MIN_HEAPIFY(set S){
+  int tmp_key;
+  int child = 2;
+  element tmp_element;
+
+  tmp_element = S.Heap[1];
+  tmp_key = S.Heap[1].id;
+  
+  while(child <= e_size){
+    if((child < e_size) && S.Heap[child].id > S.Heap[child+1].id)
+      child++;
+    if(tmp_key < S.Heap[child].id)
+      break;
+    else{
+      S.Heap[child/2] = S.Heap[child];
+      child *=2;
+    }
+  }
+  S.Heap[child/2] = tmp_element;
+}
+
 // -----  Inserts element x into set S. -----
 // Increase by 1 of set size.
 // if parent key > new key then, switch parent and new element.
 // Confirm the 'place to put the element' as the current location.
 // put the new element to confirmed place.
-void set::INSERT(set& S, element x){
+void set::INSERT(set &S, element x){
   string new_name;
   int new_id;
   string new_school;
@@ -125,7 +147,7 @@ element set::MINIMUM(set S){
 //  step 4 If child's key is smaller, then swap parent and child. and go to step 1.
 // Put the last element in the determined place.
 // ----- Return the saved root element. -----
-element set::EXTRACT_MIN(set& S){
+element set::EXTRACT_MIN(set &S){
 
   element temp_root = S.MINIMUM(S); // root element (return value)
   element temp_last = S.Heap[e_size]; // last element 
@@ -149,10 +171,14 @@ element set::EXTRACT_MIN(set& S){
 }
 
 // ----- decreases value of element x's key to k. -----
-void DECREASE_KEY(set S, element x , int k){
+void set::DECREASE_KEY(set &S, element &x , int k){
 
+  x.set_data(k, x.name , x.school);
+  S.Heap[k] = x;
+  S.MIN_HEAPIFY();
+  cout <<"[" << S.Heap[k].name << ", " << S.Heap[k].id << ", " << S.Heap[k].school << "]" << endl;
 
-} 
+}
 
 // Print out all elements in queue.
 void set::PRINT_ALL(set S){
@@ -161,12 +187,16 @@ void set::PRINT_ALL(set S){
   }
 }
 
+
+
+
 int main(){
 
+int element_index;
+int new_id;
 char menu;
 set s;
 element e;
-
 
 while(menu != 'Q'){
 
@@ -181,7 +211,12 @@ while(menu != 'Q'){
       s.EXTRACT_MIN(s);
       break;
     case 'C':
-      cout << "C";
+
+      cout << "Enter index of element: " ;
+      cin >> element_index;
+      cout << "Enter id value: ";
+      cin >> new_id;
+      s.DECREASE_KEY(s,s.Heap[element_index],new_id);
       break;
     case 'P':
       s.PRINT_ALL(s);
