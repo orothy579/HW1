@@ -1,27 +1,33 @@
+
+//(1) Lecture Slide
+// 1-1 lecture slide ch6  1~40
+// 1-2 Datastructure slide 28Heap01 by Professor KimHojun 
+
+//(2) Blog
+// 2-1 https://novemberfirst.tistory.com/32 : Difference of class and struct.
+// 2-2 https://chanhuiseok.github.io/posts/algo-37/ How to use string
+// 2-3 https://velog.io/@sw801733/C-%EB%AC%B8%EC%9E%90%EC%97%B4-%EC%9E%85%EB%A0%A5-%EB%B0%9B%EA%B8%B0 How to get string from user
+
+
+//(3) Stackoverflow
+// 3-1 https://stackoverflow.com/questions/5838711/stdcin-input-with-spaces : How to use getline()
+
 #include <iostream>
 #include <string>
 using namespace std;
 
-//Blog
-//https://novemberfirst.tistory.com/32 : class와 struct의 차이점
-//https://chanhuiseok.github.io/posts/algo-37/ string 사용법
-//https://velog.io/@sw801733/C-%EB%AC%B8%EC%9E%90%EC%97%B4-%EC%9E%85%EB%A0%A5-%EB%B0%9B%EA%B8%B0 문자열 입력 받기
-//김호준 교수님 데이터 구조 강의 slide 28Heap01
+#define Heap_Size 30+1 //According to problem conditions. Heap Size is30 because I am goona vacate index 0
 
 
-
-//일단 heap을 만든다.
-// insert 할 때마다 , min-heapify 적용한다.
-
-// Show message
+// Message of menu
   const  string message = 
   "\n********** MENU ********** \n"
   "I : Insert new element into queue. \n"
   "D : Delete element with smallest key from queue.\n"
-  "C : Delete key of element in queue.\n"
+  "C : Decrease key of element in queue.\n"
   "P : Print out all elements in queue.\n"
   "Q : Quit \n\n"
-  "Choose menu :";
+  "Choose menu : ";
 
 // Define element class
 class element {
@@ -29,16 +35,16 @@ class element {
     int id; // Key
     string name; //at most 10 characters
     string school; // "Handong" , "Doodong" , "Sedong"
-    void set_data(int i , string n , string s);
+    void set_data(int i , string n , string s); // To set element
 };
 
+// to set element
 void element::set_data(int i, string n , string s){
   id = i;
   name = n ;
   school = s;
 }
 
-#define Heap_Size 30+1 //According to problem conditions. Heap Size is30 because I am goona vacate index 0
 // Define heap class
 class set{
   int e_size; // number of elements
@@ -47,9 +53,7 @@ class set{
     element Heap[Heap_Size]; // make Heap
     set(); // e_size = 0
     int set_size(); // return elements size  --> 현재 원소수 조회 ,ADT로 인해 e_size는 private 원소 
-    bool heap_full(); // e_size >= Heap_Size - 1 ? 인지 판단
-    bool heap_empty(); // e_size == 0 ? 인지 판단
-    void MIN_HEAPIFY(set S); // Make heap to min heap.
+    void MIN_HEAPIFY(set &S); // Make heap to min heap.
     void INSERT(set &S , element x); //inserts element x into set S.
     element MINIMUM(set S); //returns element of S with largest key.
     element EXTRACT_MIN(set &S); // removes and returns element of S with largest key.
@@ -62,39 +66,28 @@ set::set(){
   e_size = 0;
 }
 
-//element의 개수가 Heap size보다 큰지 작은지 판단
-bool set::heap_full(){
-  if(e_size >= Heap_Size-1)
-    return true;
-  else
-    return false;
-}
-
-//To get to private variable.
-int set::set_size(){
+//----- Return set size -----
+int set::set_size() {
   return e_size;
 }
 
-//Make Heap to Min Heap
-void set::MIN_HEAPIFY(set S){
-  int tmp_key;
-  int child = 2;
-  element tmp_element;
+//-----Make Heap as Min-Heap -----
+void set::MIN_HEAPIFY(set &S){
+  int child = 2; // Define first child as 2
+  int tmp_key = S.Heap[1].id; // Save root's key.
+  element tmp_element = S.Heap[1]; // Save root element.
 
-  tmp_element = S.Heap[1];
-  tmp_key = S.Heap[1].id;
-  
-  while(child <= e_size){
-    if((child < e_size) && S.Heap[child].id > S.Heap[child+1].id)
-      child++;
-    if(tmp_key < S.Heap[child].id)
-      break;
+  while(child <= e_size){ // Repeat until to get to last node.
+    if((child < e_size) && ( S.Heap[child+1].id < S.Heap[child].id)) // Compare left child and right child.
+      child++; // If left child is greater than right child. Go to right child.
+    if(tmp_key < S.Heap[child].id)  
+      break; // If root's key is smaller than current child id then , break;
     else{
-      S.Heap[child/2] = S.Heap[child];
-      child *=2;
+      S.Heap[child/2] = S.Heap[child]; // Save child's element into parent place.
+      child *=2; // Go down to next level.
     }
   }
-  S.Heap[child/2] = tmp_element;
+  S.Heap[child/2] = tmp_element; // In exsiting child. save root element.
 }
 
 // -----  Inserts element x into set S. -----
@@ -103,31 +96,35 @@ void set::MIN_HEAPIFY(set S){
 // Confirm the 'place to put the element' as the current location.
 // put the new element to confirmed place.
 void set::INSERT(set &S, element x){
+  
   string new_name;
   int new_id;
   string new_school;
 
-  cout << "Enter name of element:";
-  cin >> new_name;
-  cout << "Enter id of element:";
+  cin.ignore();
+  cout << "Enter name of element: ";
+  getline(cin,new_name); // To prepare for when there is a space in the name.
+
+  cout << "Enter id of element: ";
   cin >> new_id;
-  cout << "Enter school of element:";
+
+  cout << "Enter school of element: ";
   cin >> new_school;
+
   x.set_data(new_id,new_name,new_school); // Add element to set
 
-  int k;
-  e_size++;
-  k = e_size;
+  e_size++; //Increase by 1 of set size.
+  int k = e_size; // Save the size of set.
 
-  while((k !=1) && (x.id < S.Heap[k/2].id))
+  while((k > 1) && (x.id < S.Heap[k/2].id))
   {
-    S.Heap[k] = S.Heap[k/2];
-    k = k/2;
+    S.Heap[k] = S.Heap[k/2]; // Get down the parent , to child.
+    k = k/2; // Go to upper level.
   }
+  
+  S.Heap[k] = x; //Save the element into determined place.
 
-  S.Heap[k] = x;
-
-  cout << "New element [" << S.Heap[k].name << ", " << S.Heap[k].id << ", " << S.Heap[k].school << "]" << "is inserted" << endl;
+  cout << "New element [" << S.Heap[k].name << ", " << S.Heap[k].id << ", " << S.Heap[k].school << "]" << " is inserted." << endl;
 
 } 
 
@@ -166,29 +163,27 @@ element set::EXTRACT_MIN(set &S){
     child *= 2; // Go down.
   }
   S.Heap[parent] = temp_last; // Save temp_last into finded place.
+
+  cout << "[" << temp_root.name <<", "<< temp_root.id <<", "<< temp_root.school << "]" << " is deleted." << endl; // Show deleted element.
+
   return temp_root; //return root element. --> The minimum element.
 
 }
 
 // ----- decreases value of element x's key to k. -----
 void set::DECREASE_KEY(set &S, element &x , int k){
-
   x.set_data(k, x.name , x.school);
-  S.Heap[k] = x;
-  S.MIN_HEAPIFY();
-  cout <<"[" << S.Heap[k].name << ", " << S.Heap[k].id << ", " << S.Heap[k].school << "]" << endl;
-
+  S.MIN_HEAPIFY(S);
 }
 
-// Print out all elements in queue.
+// ----- Print out all elements in queue. -----
 void set::PRINT_ALL(set S){
+  //From root to last node , just print out!
   for(int i = 1 ; i <= S.set_size() ; i++){
-    cout << "[" << S.Heap[i].name << ", " << S.Heap[i].id <<", " << S.Heap[i].school << "]" << endl;
+    cout << "[" << S.Heap[i].name << ", " << S.Heap[i].id <<", " << S.Heap[i].school << "]" << " ";
   }
+  cout << endl;
 }
-
-
-
 
 int main(){
 
@@ -211,7 +206,6 @@ while(menu != 'Q'){
       s.EXTRACT_MIN(s);
       break;
     case 'C':
-
       cout << "Enter index of element: " ;
       cin >> element_index;
       cout << "Enter id value: ";
@@ -226,8 +220,5 @@ while(menu != 'Q'){
       return 0;
   }
 }
-
-
-
 
 }
